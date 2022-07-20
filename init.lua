@@ -118,27 +118,6 @@ function hideShow2(name)
   end
 end
 
-
--- function resetDisplay()
---   hs.execute("/opt/homebrew/bin/displayplacer 'id:56A96CFC-7F21-168E-3D19-FC1626C9B248 res:3840x2160 degree:0' 'id:5B9C83D9-37AB-494E-0857-D6964E3302DB res:1920x1080 hz:60 color_depth:8 scaling:on origin:(2560,-318) degree:180'")
---   hs.execute("/opt/homebrew/bin/displayplacer 'id:56A96CFC-7F21-168E-3D19-FC1626C9B248 res:2560x1440 degree:0' 'id:5B9C83D9-37AB-494E-0857-D6964E3302DB res:1080x1920 hz:60 color_depth:8 scaling:on origin:(3840,-318) degree:90'")
--- end
-
--- function displayWatch(eventType)
--- 	if (eventType == hs.caffeinate.watcher.screensDidWake) then
--- 		hs.execute("/opt/homebrew/bin/displayplacer 'id:56A96CFC-7F21-168E-3D19-FC1626C9B248 res:1920x1080 hz:60 color_depth:8 scaling:on origin:(0,0) degree:0'")
--- 		hs.execute("/opt/homebrew/bin/displayplacer 'id:56A96CFC-7F21-168E-3D19-FC1626C9B248 res:2560x1440 hz:60 color_depth:8 scaling:on origin:(0,0) degree:0'")
--- 	end
--- end
-
--- displayWatcher = hs.caffeinate.watcher.new(displayWatch)
--- displayWatcher:start()
-
--- hyperModeBind('n', function() 
---   resetDisplay();
---   --runOSAScript("Notifications - Clear All Visible.scpt") 
--- end)
-
 hyperModeBind('b', function() hideShow2("Safari") end)
 hyperModeBind('t', function() hideShow2("iTerm") end)
 hyperModeBind('v', function() hideShow2("com.microsoft.VSCode") end)
@@ -149,6 +128,7 @@ hyperModeBind('m', function() hideShow2("Slack") end)
 hyperModeBind('z', function() hs.brightness.set(0);  print("setting brightness to 0") end)
 
 require('layouts')
+
 -- Reload config when any lua file in config directory changes
 function reloadConfig(files)
     doReload = false
@@ -162,30 +142,11 @@ function reloadConfig(files)
     end
 end
 
-local myWatcher = hs.pathwatcher.new(os.getenv('HOME') .. '/.homesick/repos/dotfiles/home/.hammerspoon/', reloadConfig):start()
+local myWatcher = hs.pathwatcher.new(os.getenv('HOME') .. '/.hammerspoon/', reloadConfig):start()
 
-local alert_sound  = hs.sound.getByName("Tink")
-alert_sound:play()
 hs.alert.show("Hammerspoon, at your service.", 2)
-require('pomodoro')
 
--- function wfirmaKorekta(str)
---   return function()
-      
---       hs.eventtap.keyStroke({}, "tab")
---       hs.eventtap.keyStroke({}, "tab")
---       hs.eventtap.keyStroke({}, "tab")
---       hs.eventtap.keyStrokes("0")
---       hs.eventtap.keyStroke({}, "tab")
---       hs.eventtap.keyStroke({}, "tab")
---       hs.eventtap.keyStroke({}, "tab")
---       hs.eventtap.keyStroke({}, "tab")
---       hs.eventtap.keyStroke({}, "tab")
---       hs.eventtap.keyStroke({}, "tab")
-             
---       hs.eventtap.keyStrokes('System nie poprawnie wystawił dwie faktury do jednego zamówienia. Anulujemy fakturę z mniejszym numerem.')
---   end
--- end
+-- handy simulation for barcode scanner
 -- function barcode(str)
 --   return function()             
 --       hs.eventtap.keyStrokes(str)
@@ -193,7 +154,4 @@ require('pomodoro')
 --   end
 -- end
 
--- hs.hotkey.bind({"ctrl", "alt", "shift"}, "B", barcode('ceropegia-woodie-dost2'));
--- hs.hotkey.bind({"ctrl", "alt", "shift"}, "V", barcode('ceropegia-woodie-dost1'));
--- hs.hotkey.bind({"ctrl", "alt", "shift"}, "C", barcode('ceropegia-woodie-1'));
 -- hs.hotkey.bind({"ctrl", "alt", "shift"}, "X", barcode('BLO_21750928'));
