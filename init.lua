@@ -1,3 +1,4 @@
+-- superb guide to lua: https://learnxinyminutes.com/docs/lua/
 -- foo = hs.distributednotifications.new(function(name, object, userInfo) print(string.format("name: %s\nobject: %s\nuserInfo: %s\n", name, object, hs.inspect(userInfo))) end)
 -- foo:start()
 
