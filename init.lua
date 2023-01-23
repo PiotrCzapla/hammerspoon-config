@@ -33,7 +33,6 @@ hyperBindings = {
   'RIGHT', -- left workspace 
   'm', -- mute notifications
   '§', -- notification center
-  ';',
   'SPACE', -- Alfred
 }
 
@@ -84,31 +83,26 @@ function runOSAScript(name)
   hs.alert.show(name .. " " .. results)
 end
 
-function hideShow(name)
-  
-  local app = hs.application.find(name)
-  if app then
-    print("the app was found")
-    if app:isHidden() then
-      app:unhide()
-      app:activate()
-    else
-      app:hide()
-    end
-  else
-    print("notfound")
-    hs.application.open(name)
-  end
-end
-
-function hideShow2(name)
+function hideShow(name, hide)
   local app = hs.application.get(name) -- so it does not look for partial matches
   print("Focusing on: "..name)
   if app and app:isFrontmost() then
-    print("cycle to the next window "..tostring(nextWindowInCycle))
+    -- app:hide()
+    -- when windows is nill
     local windows = app:allWindows()
-    windows[#windows ]:focus()
+    if #windows == 1 then
+      print("Hiding app")
+      if hide then
+        app:hide()
+      else
+        app:focusedWindow():minimize()
+      end
+    else
+      print("Switching to next group")
+      windows[#windows]:focus()
+    end
   else
+    print('Current focused app', hs.application.frontmostApplication():bundleID())
     if string.find(name, "%.") then
       print("Focusing by boundle id:"..name)
       hs.application.launchOrFocusByBundleID(name)
@@ -119,31 +113,54 @@ function hideShow2(name)
   end
 end
 
-hyperModeBind('b', function() hideShow2("Safari") end)
-hyperModeBind('t', function() hideShow2("iTerm") end)
-hyperModeBind('v', function() hideShow2("com.microsoft.VSCode") end)
-hyperModeBind('f', function() hideShow2("Craft") end)
-hyperModeBind('g', function() hideShow2("Google Chrome") end)
-hyperModeBind('r', function() hideShow2("Finder") end)
-hyperModeBind('m', function() hideShow2("Slack") end)
-hyperModeBind('z', function() hs.brightness.set(0);  print("setting brightness to 0") end)
-
-require('layouts')
-
 -- Reload config when any lua file in config directory changes
 function reloadConfig(files)
-    doReload = false
-    for _,file in pairs(files) do
-        if file:sub(-4) == '.lua' then
-            doReload = true
-        end
-    end
-    if doReload then
-        hs.reload()
-    end
+  doReload = false
+  for _,file in pairs(files) do
+      if file:sub(-4) == '.lua' then
+          doReload = true
+      end
+  end
+  if doReload then
+      hs.reload()
+  end
+end
+function moveWindowToDisplay(d)
+  return function()
+    local displays = hs.screen.allScreens()
+    local win = hs.window.focusedWindow()
+    win:moveToScreen(displays[d], false, true)
+  end
 end
 
-local myWatcher = hs.pathwatcher.new(os.getenv('HOME') .. '/.hammerspoon/', reloadConfig):start()
+function toNextDisplay()
+  -- get the focused window
+  local win = hs.window.focusedWindow()
+  -- get the screen where the focused window is displayed, a.k.a. current screen
+  local screen = win:screen()
+  -- compute the unitRect of the focused window relative to the current screen
+  -- and move the window to the next screen setting the same unitRect 
+  win:move(win:frame():toUnitRect(screen:frame()), screen:next(), true, 0)
+end
+
+
+hyperModeBind("1", moveWindowToDisplay(1))
+hyperModeBind("2", moveWindowToDisplay(2))
+hyperModeBind("3", moveWindowToDisplay(3))
+
+hyperModeBind('n', toNextDisplay)
+
+hyperModeBind('r', function() hideShow("Craft") end)
+hyperModeBind('t', function() hideShow("com.googlecode.iterm2") end)
+hyperModeBind('v', function() hideShow("com.microsoft.VSCode") end)
+hyperModeBind('b', function() hideShow("Safari") end)
+hyperModeBind('f', function() hideShow("Finder") end)
+hyperModeBind('g', function() hideShow("Google Chrome") end)
+hyperModeBind('h', function() hs.reload() end)
+hyperModeBind('f18', function() hideShow("1Password", true) end)
+require('layouts')
+
+-- local myWatcher = hs.pathwatcher.new(os.getenv('HOME') .. '/.hammerspoon/', reloadConfig):start()
 
 hs.alert.show("Hammerspoon, at your service.", 2)
 
