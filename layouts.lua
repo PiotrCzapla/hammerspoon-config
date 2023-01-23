@@ -121,17 +121,9 @@ end):start()
 --
 
 grid = {
-  {key="u", units={positions.upper50Left50}},
-  {key="i", units={positions.upper50}},
-  {key="o", units={positions.upper50Right50}},
-
-  {key="j", units={positions.left50, positions.left66, positions.left34}},
-  {key="k", units={positions.centered, positions.maximized}},
-  {key="l", units={positions.right50, positions.right66, positions.right34}},
-
-  {key="m", units={positions.lower50Left50}},
-  {key=",", units={positions.lower50}},
-  {key=".", units={positions.lower50Right50}}
+  {key="j", units={positions.left50, positions.left66, positions.left34, positions.upper50Left50, positions.lower50Left50}},
+  {key="k", units={positions.maximized, positions.centered, positions.lower50, positions.upper50}},
+  {key="l", units={positions.right50, positions.right66, positions.right34, positions.upper50Right50, positions.lower50Right50}},
 }
 hs.fnutils.each(grid, function(entry)
   hyperModeBind(entry.key, function()
