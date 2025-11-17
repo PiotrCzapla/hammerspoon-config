@@ -1,8 +1,3 @@
--- superb guide to lua: https://learnxinyminutes.com/docs/lua/
--- foo = hs.distributednotifications.new(function(name, object, userInfo) print(string.format("name: %s\nobject: %s\nuserInfo: %s\n", name, object, hs.inspect(userInfo))) end)
--- foo:start()
-
-
 -- hattip https://github.com/lodestone/hyper-hacks
 -- hattip https://gist.github.com/ttscoff/cce98a711b5476166792d5e6f1ac5907
 -- hattip https://gist.github.com/prenagha/1c28f71cb4d52b3133a4bff1b3849c3e
@@ -16,7 +11,7 @@ hyperMode = hs.hotkey.modal.new({}, nil)
 hyperBindings = {
   'a',     -- Things add
   's',     -- Things add selection
-  'd',     -- Dash
+  'd',     -- Discord
   'c',     -- multi clipboard
   'v',     -- ?
   'F12',    -- Mute
@@ -83,14 +78,15 @@ function runOSAScript(name)
   hs.alert.show(name .. " " .. results)
 end
 
-function hideShow(name, hide)
+
+function hideShow(name, hide, followCursor)
   local app = hs.application.get(name) -- so it does not look for partial matches
   print("Focusing on: "..name)
   if app and app:isFrontmost() then
     -- app:hide()
     -- when windows is nill
     local windows = app:allWindows()
-    if #windows == 1 then
+    if (#windows == 1 or #windows == nil) and app:focusedWindow() then
       print("Hiding app")
       if hide then
         app:hide()
@@ -110,8 +106,26 @@ function hideShow(name, hide)
       print("Focusing by name:"..name)
       hs.application.launchOrFocus(name)
     end
+    
+    -- Move window to cursor's screen if requested
+    if followCursor then
+      if not app then  
+        app = hs.application.get(name) -- so it does not look for partial matches
+      end
+      if not app then 
+        return
+      end
+      local win = app:focusedWindow()
+      if win then
+        local mouseScreen = hs.mouse.getCurrentScreen()
+        if mouseScreen then
+          win:moveToScreen(mouseScreen, false, true)
+        end
+      end
+    end
   end
 end
+-----------
 
 -- Reload config when any lua file in config directory changes
 function reloadConfig(files)
@@ -134,13 +148,33 @@ function moveWindowToDisplay(d)
 end
 
 function toNextDisplay()
-  -- get the focused window
   local win = hs.window.focusedWindow()
-  -- get the screen where the focused window is displayed, a.k.a. current screen
   local screen = win:screen()
-  -- compute the unitRect of the focused window relative to the current screen
-  -- and move the window to the next screen setting the same unitRect 
-  win:move(win:frame():toUnitRect(screen:frame()), screen:next(), true, 0)
+  local frame = win:frame()
+  local screenFrame = screen:frame()
+
+  if not frame or not screenFrame or not win then
+    print("Invalid frame or screenFrame.")
+    return
+  end
+
+  local unitRect = nil
+  local success, err = pcall(function()
+    unitRect = frame:toUnitRect(screenFrame)
+  end)
+
+  if not success then
+    print("Error converting to unit rect:", err)
+    return
+  end
+
+  local nextScreen = screen:next()
+  if not nextScreen then
+    print("No next screen.")
+    return
+  end
+
+  win:move(unitRect, nextScreen, true, 0)
 end
 
 
@@ -151,14 +185,24 @@ hyperModeBind("3", moveWindowToDisplay(3))
 hyperModeBind('n', toNextDisplay)
 
 hyperModeBind('r', function() hideShow("Craft") end)
-hyperModeBind('t', function() hideShow("com.googlecode.iterm2") end)
+hyperModeBind('t', function() hideShow("Terminal") end)
 hyperModeBind('v', function() hideShow("com.microsoft.VSCode") end)
 hyperModeBind('b', function() hideShow("Safari") end)
 hyperModeBind('f', function() hideShow("Finder") end)
-hyperModeBind('g', function() hideShow("Google Chrome") end)
-hyperModeBind('h', function() hs.reload() end)
-hyperModeBind('f18', function() hideShow("1Password", true) end)
-require('layouts')
+hyperModeBind('d', function() hideShow("Discord") end)
+hyperModeBind('p', function() hideShow("Passwords", true) end)
+hyperModeBind('o', function() hideShow("1Password", true) end)
+hs.hotkey.bind({}, 'f18', function() hideShow("Claude", true, true) end)
+hs.hotkey.bind({}, 'f19', function() hideShow("Comet", true, true) end)
+hs.hotkey.bind({}, 'f16', function() hideShow("Obsidian", true, false) end)
+hyperModeBind('f18', function()
+  local win = hs.window.focusedWindow()
+  if win then
+    local frame = win:frame()
+    local center = hs.geometry.point(frame.x + frame.w / 2, frame.y + frame.h / 2)
+    hs.mouse.absolutePosition(center)
+  end
+end)
 
 -- local myWatcher = hs.pathwatcher.new(os.getenv('HOME') .. '/.hammerspoon/', reloadConfig):start()
 
